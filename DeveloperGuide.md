@@ -9,17 +9,16 @@ mvn hpi:run -Dport=5025
 ```
 > Enter https://localhost:5025/jenkins in your browser
 
-**Note:** Make sure that **port 5025** is free on your machine, and you have
-**_Pipeline_** plugin installed in your Jenkins server to configure the multibranch pipeline job.
+**Note:** Make sure that **port 5025** is free on your machine.
 
 2. Build the project:
 ```
-./mvnw clean install
+mvn clean install
 ```
 
 3. Generate the `hpi` file:
 ```
-./mvnw hpi:hpi
+mvn hpi:hpi
 ```
 
 The generated `hpi` file can be found in the `target` folder of your project directory.
