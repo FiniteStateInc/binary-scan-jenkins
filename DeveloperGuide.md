@@ -4,6 +4,17 @@
 To work with the project locally and run it with a Jenkins server, follow these steps:
 
 1. Run Jenkins server locally with the plugin being deployed:
+Make sure to have java-21 and maven insatalled in your local machine
+
+```
+# maven.sh file
+export JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
+#export PATH=$JAVA_HOME/bin:$PATH
+export M2_HOME=/opt/maven
+export MAVEN_HOME=/opt/maven
+export PATH=${M2_HOME}/bin:${PATH}
+```
+
 ```
 source /etc/profile.d/maven.sh 
 mvn hpi:run -Dport=5025 
