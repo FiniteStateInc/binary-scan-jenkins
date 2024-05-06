@@ -1,8 +1,9 @@
-# helloWorld
+# Binary Scan Plugin for Jenkins
 
 ## Introduction
 
-TODO Describe what your plugin does here
+This repository contains a Jenkins plugin implemented as a Maven project. The plugin provides functionality for performing 
+a Finite State Binary Scan. This README.md file serves as a guide for the users of the plugin.
 
 ## Getting started
 
@@ -26,6 +27,6 @@ Refer to our [contribution guidelines](https://github.com/jenkinsci/.github/blob
 
 Licensed under MIT, see [LICENSE](LICENSE.md)
 
-* Use python scripts directly
-* Create image, push to registry and use it
-* Comment on PR does not work because on jenkins SCM are external features.
+
+# Developers Guide
+Please follow the steps described [**here**](DeveloperGuide.md)
