@@ -1,5 +1,6 @@
 ## Developers Guide
 
+### Setting up the project to run in maven locally to develop
 To work with the project locally and run it with a Jenkins server, follow these steps:
 
 1. Run Jenkins server locally with the plugin being deployed:
@@ -11,33 +12,26 @@ mvn hpi:run -Dport=5025
 
 **Note:** Make sure that **port 5025** is free on your machine.
 
-2. Build the project:
-```
-mvn clean install
-```
-
-3. Generate the `hpi` file:
-```
-mvn hpi:hpi
-```
-
-The generated `hpi` file can be found in the `target` folder of your project directory.
-
 ### Setting up dev-test environment in docker
 
 * Make sure a `temp-jenkins` directory exists in your home directory.
 
 * Build the project:
 ```
-./mvnw clean install
+mvn clean install
 ```
 
 * Generate the `hpi` file:
 ```
-./mvnw hpi:hpi
+mvn hpi:hpi
 ```
 
+The generated `hpi` file can be found in the `target` folder of your project directory.
+
+
 * Spin up the jenkins instance with the following command:
+
+**Note:** Make sure that **port 8082** is free on your machine.
 
 ```
 docker-compose up
@@ -48,7 +42,7 @@ docker-compose up -d
 ```
 
 3. Install the plugin `hpi` file in your Jenkins instance:
->- Go to your Jenkins instance.
+>- Go to your Jenkins instance. Enter https://localhost:8082/jenkins in your browser
 >- Navigate to **Manage Jenkins** > **Manage Plugins** > **Advanced Settings**.
 >- In the **Deploy Plugin** section, click **Choose File**.
 >- Select the generated `hpi` file and click **Deploy**.

@@ -7,6 +7,6 @@ services:
     environment:
       - JAVA_OPTS=-Djenkins.install.runSetupWizard=false
     ports:
-      - 8080:8080
+      - 8082:8080
       - 50000:50000
     restart: unless-stopped
