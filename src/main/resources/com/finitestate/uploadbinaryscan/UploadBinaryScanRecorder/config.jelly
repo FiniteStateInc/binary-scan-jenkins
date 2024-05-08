@@ -1,8 +1,8 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:c="/lib/credentials" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
     <!-- authentication fields -->    
-    <f:entry title="${%Finite State API client ID}" field="finiteStateClientId" description="Finite State API client ID">
-        <f:textbox />
+    <f:entry field="finiteStateClientId" title="${%Finite State API client ID}" description="Finite State API client ID">
+        <c:select />
     </f:entry>
 
     <f:entry field="finiteStateSecret" title="${%Finite State API secret}" description="Finite State API secret">
@@ -59,11 +59,12 @@
         function toggleFields() {
             var versionField = document.getElementById("version");
             var externalizableIdCheckbox = document.getElementById("externalizableId");
-
-            if (externalizableIdCheckbox.checked) {
-                versionField.style.display = "none";
-            } else {
-                versionField.style.display = "block";
+            if (externalizableIdCheckbox){
+                if (externalizableIdCheckbox.checked) {
+                    versionField.style.display = "none";
+                } else {
+                    versionField.style.display = "block";
+                }
             }
         }
         (function() {

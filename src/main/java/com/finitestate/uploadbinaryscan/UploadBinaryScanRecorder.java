@@ -242,12 +242,13 @@ public class UploadBinaryScanRecorder extends Recorder {
         } else {
             parsedVersion = version;
         }
+        String parsedFiniteStateClientId = getSecretTextValue(build, finiteStateClientId);
         String parsedFiniteStateSecret = getSecretTextValue(build, finiteStateSecret);
         String parsedFiniteStateOrganizationContext = getSecretTextValue(build, finiteStateOrganizationContext);
-
+        
         // Create a map to hold environment variables
         List<String> envList = new ArrayList<>();
-        envList.add("INPUT_FINITE-STATE-CLIENT-ID=" + finiteStateClientId);
+        envList.add("INPUT_FINITE-STATE-CLIENT-ID=" + parsedFiniteStateClientId);
         envList.add("INPUT_FINITE-STATE-SECRET=" + parsedFiniteStateSecret);
         envList.add("INPUT_FINITE-STATE-ORGANIZATION-CONTEXT=" + parsedFiniteStateOrganizationContext);
         envList.add("INPUT_ASSET-ID=" + assetId);
@@ -353,6 +354,16 @@ public class UploadBinaryScanRecorder extends Recorder {
     @Symbol("greet")
     @Extension
     public static final class DescriptorImpl extends BuildStepDescriptor<Publisher> {
+        public ListBoxModel doFillFiniteStateClientIdItems(
+                @AncestorInPath Item item, @QueryParameter String finiteStateClientId) {
+            ListBoxModel items = new ListBoxModel();
+            for (StandardCredentials credential : CredentialsProvider.lookupCredentials(
+                    StandardCredentials.class, (Item) null, ACL.SYSTEM, Collections.emptyList())) {
+                items.add(credential.getId());
+            }
+            return items;
+        }
+        
         public ListBoxModel doFillFiniteStateSecretItems(
                 @AncestorInPath Item item, @QueryParameter String finiteStateSecret) {
             ListBoxModel items = new ListBoxModel();
