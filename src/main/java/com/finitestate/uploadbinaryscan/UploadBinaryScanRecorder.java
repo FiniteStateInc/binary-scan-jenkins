@@ -245,7 +245,7 @@ public class UploadBinaryScanRecorder extends Recorder {
         String parsedFiniteStateClientId = getSecretTextValue(build, finiteStateClientId);
         String parsedFiniteStateSecret = getSecretTextValue(build, finiteStateSecret);
         String parsedFiniteStateOrganizationContext = getSecretTextValue(build, finiteStateOrganizationContext);
-        
+
         // Create a map to hold environment variables
         List<String> envList = new ArrayList<>();
         envList.add("INPUT_FINITE-STATE-CLIENT-ID=" + parsedFiniteStateClientId);
@@ -363,7 +363,7 @@ public class UploadBinaryScanRecorder extends Recorder {
             }
             return items;
         }
-        
+
         public ListBoxModel doFillFiniteStateSecretItems(
                 @AncestorInPath Item item, @QueryParameter String finiteStateSecret) {
             ListBoxModel items = new ListBoxModel();
