@@ -18,7 +18,7 @@
         <f:textbox />
     </f:entry>
     
-    <f:entry title="${%User externalized ID as version}" field="externalizableId" description="We recommend to keep check this option. It will use a unique identifier id associated with the build for tag the version of the asset.">
+    <f:entry title="${%Use externalized ID as version}" field="externalizableId" description="We recommend to keep check this option. It will use a unique identifier id associated with the build for tag the version of the asset.">
         <f:checkbox default="true" id="externalizableId" onclick="toggleFields()" />
     </f:entry>
     
