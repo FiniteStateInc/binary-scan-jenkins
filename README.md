@@ -24,13 +24,13 @@ This plugin gives you the ability to add a Post Build action for:
 ## Getting started
 
 To use this plugin, follow the following steps:
-
-1.  Create or edit your `Frestyle project` or `Multi-configuration poject`.
-2. Click on the **Add a Post-build Actions** dropdown and select `Finite State - Upload Binary Scan` option:
+1. [Install the plugin](https://www.jenkins.io/doc/book/managing/plugins/#installing-a-plugin) in you jenkins instance. 
+2.  Create or edit your `Frestyle project` or `Multi-configuration poject`.
+3. Click on the **Add a Post-build Actions** dropdown and select `Finite State - Upload Binary Scan` option:
 ![Post Build action](./screenshots/post_build_action_add.png)
-3. The **post build action** will be appear in the UI:
+4. The **post build action** will be appear in the UI:
 ![Action form](./screenshots/action_form.png)
-4. Complete the fields following the below reference. For sensitive fields like `Finite state API client`, `Finite State API client ID` and `Finite state organization context` we use the credentials plugin, so, be sure to create the credentials for each of this fields and select the correct ones on each dropdown. 
+5. Complete the fields following the below reference. For sensitive fields like `Finite state API client`, `Finite State API client ID` and `Finite state organization context` we use the credentials plugin, so, be sure to create the credentials for each of this fields and select the correct ones on each dropdown. 
 
 | parameter                         | description                                                                                                                                                                                  | required | type      | default |
 | --------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | --------- | ------- |
@@ -47,8 +47,8 @@ To use this plugin, follow the following steps:
 | Created by user ID                | (optional) ID of the user to be recorded as the 'Created By User' on the asset version. If not provided, the version will adopt the existing value of the asset.                             | `false`  | `string`  |         |
 | Product ID                        | (optional) ID of the product that the asset version will belong to. If not provided, the existing product for the asset will be used, if applicable.                                         | `false`  | `string`  |         |
 | Artifact description              | (optional) Description of the artifact. If not provided, the default is "Firmware Binary".                                                                                                   | `false`  | `string`  |         |
-5. Click on **Save** button to save the configuration
-6. After **building** the project, the plugin will upload the file to the Finite State Platform. The output will be displayed in the console.
+6. Click on **Save** button to save the configuration
+7. After **building** the project, the plugin will upload the file to the Finite State Platform. The output will be displayed in the console.
 ![Console output](./screenshots/console_output.png)
 
 **Note:** Please note that if any errors occur, they will also be displayed on the same screen.
