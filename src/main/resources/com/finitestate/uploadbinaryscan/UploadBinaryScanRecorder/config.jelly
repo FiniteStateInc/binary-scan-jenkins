@@ -22,7 +22,7 @@
         <f:checkbox default="true" id="externalizableId" onclick="toggleFields()" />
     </f:entry>
     
-    <div id="version">
+    <div id="version" style="display: none">
         <f:entry title="${%Version}" field="version" description="The name of the asset version that will be created. Used when 'User externalized ID as version is disabled'">
             <f:textbox />
         </f:entry>
@@ -58,7 +58,10 @@
     <script>
         function toggleFields() {
             var versionField = document.getElementById("version");
+            console.log(versionField);
+
             var externalizableIdCheckbox = document.getElementById("externalizableId");
+            console.log(externalizableIdCheckbox);
             if (externalizableIdCheckbox){
                 if (externalizableIdCheckbox.checked) {
                     versionField.style.display = "none";
@@ -67,10 +70,12 @@
                 }
             }
         }
+        document.addEventListener("DOMContentLoaded", toggleFields());
+        
         (function() {
             // your page initialization code here
             // the DOM will be available here
             toggleFields();
-        })();    
+        })();
     </script>
 </j:jelly>
