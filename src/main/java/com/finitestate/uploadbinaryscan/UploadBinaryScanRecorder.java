@@ -420,13 +420,13 @@ public class UploadBinaryScanRecorder extends Recorder {
             }
             return FormValidation.ok();
         }
-        
+
         @RequirePOST
         public FormValidation doCheckFiniteStateClientId(@QueryParameter String value)
                 throws IOException, ServletException {
             return checkRequiredValue(value);
         }
-        
+
         @RequirePOST
         public FormValidation doCheckFiniteStateSecret(@QueryParameter String value)
                 throws IOException, ServletException {
