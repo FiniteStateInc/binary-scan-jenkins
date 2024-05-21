@@ -354,7 +354,7 @@ public class UploadBinaryScanRecorder extends Recorder {
         return true;
     }
 
-    @Symbol("greet")
+    @Symbol("fs-upload-binary-scan")
     @Extension
     public static final class DescriptorImpl extends BuildStepDescriptor<Publisher> {
         public ListBoxModel doFillFiniteStateClientIdItems(
