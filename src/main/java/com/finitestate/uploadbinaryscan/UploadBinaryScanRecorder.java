@@ -2,6 +2,7 @@ package com.finitestate.uploadbinaryscan;
 
 import com.cloudbees.plugins.credentials.CredentialsProvider;
 import com.cloudbees.plugins.credentials.common.StandardCredentials;
+import com.cloudbees.plugins.credentials.common.StandardListBoxModel;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.async.ResultCallback;
 import com.github.dockerjava.api.command.BuildImageCmd;
@@ -35,12 +36,14 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import javax.servlet.ServletException;
+import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
 import org.jenkinsci.plugins.plaincredentials.StringCredentials;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 public class UploadBinaryScanRecorder extends Recorder {
 
@@ -356,7 +359,16 @@ public class UploadBinaryScanRecorder extends Recorder {
     public static final class DescriptorImpl extends BuildStepDescriptor<Publisher> {
         public ListBoxModel doFillFiniteStateClientIdItems(
                 @AncestorInPath Item item, @QueryParameter String finiteStateClientId) {
-            ListBoxModel items = new ListBoxModel();
+            StandardListBoxModel items = new StandardListBoxModel();
+            if (item == null) {
+                if (!Jenkins.get().hasPermission(Jenkins.ADMINISTER)) {
+                    return items.includeCurrentValue(finiteStateClientId);
+                }
+            } else {
+                if (!item.hasPermission(Item.EXTENDED_READ) && !item.hasPermission(CredentialsProvider.USE_ITEM)) {
+                    return items.includeCurrentValue(finiteStateClientId);
+                }
+            }
             for (StandardCredentials credential : CredentialsProvider.lookupCredentials(
                     StandardCredentials.class, (Item) null, ACL.SYSTEM, Collections.emptyList())) {
                 items.add(credential.getId());
@@ -366,7 +378,16 @@ public class UploadBinaryScanRecorder extends Recorder {
 
         public ListBoxModel doFillFiniteStateSecretItems(
                 @AncestorInPath Item item, @QueryParameter String finiteStateSecret) {
-            ListBoxModel items = new ListBoxModel();
+            StandardListBoxModel items = new StandardListBoxModel();
+            if (item == null) {
+                if (!Jenkins.get().hasPermission(Jenkins.ADMINISTER)) {
+                    return items.includeCurrentValue(finiteStateSecret);
+                }
+            } else {
+                if (!item.hasPermission(Item.EXTENDED_READ) && !item.hasPermission(CredentialsProvider.USE_ITEM)) {
+                    return items.includeCurrentValue(finiteStateSecret);
+                }
+            }
             for (StandardCredentials credential : CredentialsProvider.lookupCredentials(
                     StandardCredentials.class, (Item) null, ACL.SYSTEM, Collections.emptyList())) {
                 items.add(credential.getId());
@@ -376,7 +397,16 @@ public class UploadBinaryScanRecorder extends Recorder {
 
         public ListBoxModel doFillFiniteStateOrganizationContextItems(
                 @AncestorInPath Item item, @QueryParameter String finiteStateOrganizationContext) {
-            ListBoxModel items = new ListBoxModel();
+            StandardListBoxModel items = new StandardListBoxModel();
+            if (item == null) {
+                if (!Jenkins.get().hasPermission(Jenkins.ADMINISTER)) {
+                    return items.includeCurrentValue(finiteStateOrganizationContext);
+                }
+            } else {
+                if (!item.hasPermission(Item.EXTENDED_READ) && !item.hasPermission(CredentialsProvider.USE_ITEM)) {
+                    return items.includeCurrentValue(finiteStateOrganizationContext);
+                }
+            }
             for (StandardCredentials credential : CredentialsProvider.lookupCredentials(
                     StandardCredentials.class, (Item) null, ACL.SYSTEM, Collections.emptyList())) {
                 items.add(credential.getId());
@@ -390,30 +420,36 @@ public class UploadBinaryScanRecorder extends Recorder {
             }
             return FormValidation.ok();
         }
-
+        
+        @RequirePOST
         public FormValidation doCheckFiniteStateClientId(@QueryParameter String value)
                 throws IOException, ServletException {
             return checkRequiredValue(value);
         }
-
+        
+        @RequirePOST
         public FormValidation doCheckFiniteStateSecret(@QueryParameter String value)
                 throws IOException, ServletException {
             return checkRequiredValue(value);
         }
 
+        @RequirePOST
         public FormValidation doCheckFiniteStateOrganizationContext(@QueryParameter String value)
                 throws IOException, ServletException {
             return checkRequiredValue(value);
         }
 
+        @RequirePOST
         public FormValidation doCheckAssetId(@QueryParameter String value) throws IOException, ServletException {
             return checkRequiredValue(value);
         }
 
+        @RequirePOST
         public FormValidation doCheckVersion(@QueryParameter String value) throws IOException, ServletException {
             return checkRequiredValue(value);
         }
 
+        @RequirePOST
         public FormValidation doCheckFilePath(@QueryParameter String value) throws IOException, ServletException {
             return checkRequiredValue(value);
         }
