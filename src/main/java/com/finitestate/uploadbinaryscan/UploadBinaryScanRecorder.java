@@ -363,7 +363,7 @@ public class UploadBinaryScanRecorder extends Recorder {
             if (item == null) {
                 // Check if the user has the ADMINISTER permission at the Jenkins root level
                 if (!Jenkins.get().hasPermission(Jenkins.ADMINISTER)) {
-                     // If not, return the current value without adding any new items
+                    // If not, return the current value without adding any new items
                     return items.includeCurrentValue(finiteStateClientId);
                 }
             } else {
@@ -373,13 +373,13 @@ public class UploadBinaryScanRecorder extends Recorder {
                     return items.includeCurrentValue(finiteStateClientId);
                 }
             }
-            
+
             // Retrieve a list of credentails in a global context:
             for (StandardCredentials credential : CredentialsProvider.lookupCredentials(
                     StandardCredentials.class, (Item) null, ACL.SYSTEM, Collections.emptyList())) {
                 items.add(credential.getId());
             }
-            
+
             // Return the populated StandardListBoxModel
             return items;
         }
