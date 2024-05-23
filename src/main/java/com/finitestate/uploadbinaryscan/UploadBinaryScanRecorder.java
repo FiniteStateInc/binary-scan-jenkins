@@ -427,7 +427,7 @@ public class UploadBinaryScanRecorder extends Recorder {
 
         private FormValidation checkRequiredValue(Item item, String value) {
             if (item == null
-                    || !item.hasPermission(Item.EXTENDED_READ) && !item.hasPermission(CredentialsProvider.USE_ITEM)) {
+                    || (!item.hasPermission(Item.EXTENDED_READ) && !item.hasPermission(CredentialsProvider.USE_ITEM))) {
                 return FormValidation.error("You do not have permission to perform this action.");
             }
             if (value == null || value.trim().isEmpty()) {
