@@ -384,7 +384,7 @@ public class UploadBinaryScanRecorder extends Recorder {
             // Return the populated StandardListBoxModel
             return items;
         }
-        
+
         @RequirePOST
         public ListBoxModel doFillFiniteStateSecretItems(
                 @AncestorInPath Item item, @QueryParameter String finiteStateSecret) {
@@ -404,7 +404,7 @@ public class UploadBinaryScanRecorder extends Recorder {
             }
             return items;
         }
-        
+
         @RequirePOST
         public ListBoxModel doFillFiniteStateOrganizationContextItems(
                 @AncestorInPath Item item, @QueryParameter String finiteStateOrganizationContext) {
@@ -424,12 +424,13 @@ public class UploadBinaryScanRecorder extends Recorder {
             }
             return items;
         }
-        
+
         private FormValidation checkRequiredValue(Item item, String value) {
-            if (item == null || !item.hasPermission(Item.EXTENDED_READ) && !item.hasPermission(CredentialsProvider.USE_ITEM)) {
+            if (item == null
+                    || !item.hasPermission(Item.EXTENDED_READ) && !item.hasPermission(CredentialsProvider.USE_ITEM)) {
                 return FormValidation.error("You do not have permission to perform this action.");
             }
-            if (value==null || value.trim().isEmpty()) {
+            if (value == null || value.trim().isEmpty()) {
                 return FormValidation.error("This value is required");
             }
             return FormValidation.ok();
@@ -448,23 +449,26 @@ public class UploadBinaryScanRecorder extends Recorder {
         }
 
         @RequirePOST
-        public FormValidation doCheckFiniteStateOrganizationContext(@AncestorInPath Item item, @QueryParameter String value)
+        public FormValidation doCheckFiniteStateOrganizationContext(
+                @AncestorInPath Item item, @QueryParameter String value) throws IOException, ServletException {
+            return checkRequiredValue(item, value);
+        }
+
+        @RequirePOST
+        public FormValidation doCheckAssetId(@AncestorInPath Item item, @QueryParameter String value)
                 throws IOException, ServletException {
             return checkRequiredValue(item, value);
         }
 
         @RequirePOST
-        public FormValidation doCheckAssetId(@AncestorInPath Item item, @QueryParameter String value) throws IOException, ServletException {
+        public FormValidation doCheckVersion(@AncestorInPath Item item, @QueryParameter String value)
+                throws IOException, ServletException {
             return checkRequiredValue(item, value);
         }
 
         @RequirePOST
-        public FormValidation doCheckVersion(@AncestorInPath Item item, @QueryParameter String value) throws IOException, ServletException {
-            return checkRequiredValue(item, value);
-        }
-
-        @RequirePOST
-        public FormValidation doCheckFilePath(@AncestorInPath Item item, @QueryParameter String value) throws IOException, ServletException {
+        public FormValidation doCheckFilePath(@AncestorInPath Item item, @QueryParameter String value)
+                throws IOException, ServletException {
             return checkRequiredValue(item, value);
         }
 
