@@ -357,6 +357,7 @@ public class UploadBinaryScanRecorder extends Recorder {
     @Symbol("fs-upload-binary-scan")
     @Extension
     public static final class DescriptorImpl extends BuildStepDescriptor<Publisher> {
+        @RequirePOST
         public ListBoxModel doFillFiniteStateClientIdItems(
                 @AncestorInPath Item item, @QueryParameter String finiteStateClientId) {
             StandardListBoxModel items = new StandardListBoxModel();
@@ -383,7 +384,8 @@ public class UploadBinaryScanRecorder extends Recorder {
             // Return the populated StandardListBoxModel
             return items;
         }
-
+        
+        @RequirePOST
         public ListBoxModel doFillFiniteStateSecretItems(
                 @AncestorInPath Item item, @QueryParameter String finiteStateSecret) {
             StandardListBoxModel items = new StandardListBoxModel();
@@ -403,6 +405,7 @@ public class UploadBinaryScanRecorder extends Recorder {
             return items;
         }
 
+        @RequirePOST
         public ListBoxModel doFillFiniteStateOrganizationContextItems(
                 @AncestorInPath Item item, @QueryParameter String finiteStateOrganizationContext) {
             StandardListBoxModel items = new StandardListBoxModel();
@@ -430,34 +433,40 @@ public class UploadBinaryScanRecorder extends Recorder {
         }
 
         @RequirePOST
+        // lgtm[jenkins/no-permission-check]
         public FormValidation doCheckFiniteStateClientId(@QueryParameter String value)
                 throws IOException, ServletException {
             return checkRequiredValue(value);
         }
 
         @RequirePOST
+        // lgtm[jenkins/no-permission-check]
         public FormValidation doCheckFiniteStateSecret(@QueryParameter String value)
                 throws IOException, ServletException {
             return checkRequiredValue(value);
         }
 
         @RequirePOST
+        // lgtm[jenkins/no-permission-check]
         public FormValidation doCheckFiniteStateOrganizationContext(@QueryParameter String value)
                 throws IOException, ServletException {
             return checkRequiredValue(value);
         }
 
         @RequirePOST
+        // lgtm[jenkins/no-permission-check]
         public FormValidation doCheckAssetId(@QueryParameter String value) throws IOException, ServletException {
             return checkRequiredValue(value);
         }
 
         @RequirePOST
+        // lgtm[jenkins/no-permission-check]
         public FormValidation doCheckVersion(@QueryParameter String value) throws IOException, ServletException {
             return checkRequiredValue(value);
         }
 
         @RequirePOST
+        // lgtm[jenkins/no-permission-check]
         public FormValidation doCheckFilePath(@QueryParameter String value) throws IOException, ServletException {
             return checkRequiredValue(value);
         }
