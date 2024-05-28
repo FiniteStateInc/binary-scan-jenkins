@@ -433,34 +433,40 @@ public class UploadBinaryScanRecorder extends Recorder {
         }
 
         @RequirePOST
+        // lgtm[jenkins/no-permission-check]
         public FormValidation doCheckFiniteStateClientId(@QueryParameter String value)
                 throws IOException, ServletException {
             return checkRequiredValue(value);
         }
 
         @RequirePOST
+        // lgtm[jenkins/no-permission-check]
         public FormValidation doCheckFiniteStateSecret(@QueryParameter String value)
                 throws IOException, ServletException {
             return checkRequiredValue(value);
         }
 
         @RequirePOST
+        // lgtm[jenkins/no-permission-check]
         public FormValidation doCheckFiniteStateOrganizationContext(@QueryParameter String value)
                 throws IOException, ServletException {
             return checkRequiredValue(value);
         }
 
         @RequirePOST
+        // lgtm[jenkins/no-permission-check]
         public FormValidation doCheckAssetId(@QueryParameter String value) throws IOException, ServletException {
             return checkRequiredValue(value);
         }
 
         @RequirePOST
+        // lgtm[jenkins/no-permission-check]
         public FormValidation doCheckVersion(@QueryParameter String value) throws IOException, ServletException {
             return checkRequiredValue(value);
         }
 
         @RequirePOST
+        // lgtm[jenkins/no-permission-check]
         public FormValidation doCheckFilePath(@QueryParameter String value) throws IOException, ServletException {
             return checkRequiredValue(value);
         }
