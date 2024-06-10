@@ -1,20 +1,8 @@
-package com.finitestate.uploadbinaryscan;
+package io.jenkins.plugins.finitestateuploadbinaryscan;
 
 import com.cloudbees.plugins.credentials.CredentialsProvider;
 import com.cloudbees.plugins.credentials.common.StandardCredentials;
 import com.cloudbees.plugins.credentials.common.StandardListBoxModel;
-import com.github.dockerjava.api.DockerClient;
-import com.github.dockerjava.api.async.ResultCallback;
-import com.github.dockerjava.api.command.BuildImageCmd;
-import com.github.dockerjava.api.command.CreateContainerCmd;
-import com.github.dockerjava.api.command.LogContainerCmd;
-import com.github.dockerjava.api.command.WaitContainerResultCallback;
-import com.github.dockerjava.api.model.Bind;
-import com.github.dockerjava.api.model.Frame;
-import com.github.dockerjava.api.model.Volume;
-import com.github.dockerjava.core.DefaultDockerClientConfig;
-import com.github.dockerjava.core.DockerClientBuilder;
-import com.github.dockerjava.core.command.BuildImageResultCallback;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
@@ -28,15 +16,17 @@ import hudson.tasks.Publisher;
 import hudson.tasks.Recorder;
 import hudson.util.FormValidation;
 import hudson.util.ListBoxModel;
+import io.jenkins.cli.shaded.org.apache.commons.lang.StringEscapeUtils;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
+import jline.internal.InputStreamReader;
 import org.jenkinsci.Symbol;
 import org.jenkinsci.plugins.plaincredentials.StringCredentials;
 import org.kohsuke.stapler.AncestorInPath;
@@ -236,121 +226,148 @@ public class UploadBinaryScanRecorder extends Recorder {
         }
     }
 
+    public static String escapeEnvVar(String input) {
+        return StringEscapeUtils.escapeJava(input);
+    }
+
+    public static String validateEnvVar(String input) {
+        if (input == null || input.isEmpty()) {
+            throw new IllegalArgumentException("Environment variable value cannot be null or empty");
+        }
+        if (!input.matches("^[a-zA-Z0-9-_]+$")) {
+            throw new IllegalArgumentException("Environment variable value contains invalid characters: " + input);
+        }
+        return input;
+    }
+
+    public static boolean isDockerInstalled() {
+        ProcessBuilder processBuilder = new ProcessBuilder("docker", "--version");
+        try {
+            Process process = processBuilder.start();
+            int exitCode = process.waitFor();
+            return exitCode == 0;
+        } catch (IOException | InterruptedException e) {
+            // Log the exception instead of printing the stack trace
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    private boolean buildDockerImage(File dockerDir, BuildListener listener) {
+        ProcessBuilder buildProcessBuilder =
+                new ProcessBuilder("docker", "build", "-t", "finite-state-upload", dockerDir.getAbsolutePath());
+        buildProcessBuilder.redirectErrorStream(true);
+        try {
+            Process buildProcess = buildProcessBuilder.start();
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(buildProcess.getInputStream()))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    listener.getLogger().println(line);
+                }
+            }
+            int buildExitCode = buildProcess.waitFor();
+            if (buildExitCode != 0) {
+                listener.getLogger().println("Docker build failed");
+                return false;
+            }
+        } catch (IOException | InterruptedException e) {
+            // Log the exception instead of printing the stack trace
+            e.printStackTrace();
+            listener.getLogger().println("Docker build process encountered an error: " + e.getMessage());
+            return false;
+        }
+        return true;
+    }
+
     @Override
     public boolean perform(AbstractBuild build, Launcher launcher, BuildListener listener)
             throws InterruptedException, IOException {
-
-        if (getExternalizableId()) {
-            parsedVersion = build.getExternalizableId();
+        if (isDockerInstalled()) {
+            listener.getLogger().println("Docker is installed");
         } else {
-            parsedVersion = version;
+            listener.getLogger().println("Docker is not installed");
+            return false;
         }
-        String parsedFiniteStateClientId = getSecretTextValue(build, finiteStateClientId);
-        String parsedFiniteStateSecret = getSecretTextValue(build, finiteStateSecret);
-        String parsedFiniteStateOrganizationContext = getSecretTextValue(build, finiteStateOrganizationContext);
 
-        // Create a map to hold environment variables
+        String parsedVersion = getExternalizableId() ? build.getExternalizableId() : version;
+        String parsedFiniteStateClientId = validateEnvVar(getSecretTextValue(build, finiteStateClientId));
+        String parsedFiniteStateSecret = validateEnvVar(getSecretTextValue(build, finiteStateSecret));
+        String parsedFiniteStateOrganizationContext =
+                validateEnvVar(getSecretTextValue(build, finiteStateOrganizationContext));
+
         List<String> envList = new ArrayList<>();
-        envList.add("INPUT_FINITE-STATE-CLIENT-ID=" + parsedFiniteStateClientId);
-        envList.add("INPUT_FINITE-STATE-SECRET=" + parsedFiniteStateSecret);
-        envList.add("INPUT_FINITE-STATE-ORGANIZATION-CONTEXT=" + parsedFiniteStateOrganizationContext);
-        envList.add("INPUT_ASSET-ID=" + assetId);
-        envList.add("INPUT_VERSION=" + parsedVersion);
+        envList.add("INPUT_FINITE-STATE-CLIENT-ID=" + escapeEnvVar(parsedFiniteStateClientId));
+        envList.add("INPUT_FINITE-STATE-SECRET=" + escapeEnvVar(parsedFiniteStateSecret));
+        envList.add("INPUT_FINITE-STATE-ORGANIZATION-CONTEXT=" + escapeEnvVar(parsedFiniteStateOrganizationContext));
+        envList.add("INPUT_ASSET-ID=" + escapeEnvVar(assetId));
+        envList.add("INPUT_VERSION=" + escapeEnvVar(parsedVersion));
 
         envList.add("INPUT_QUICK-SCAN=" + (quickScan ? "true" : "false"));
+        envList.add("INPUT_BUSINESS-UNIT-ID=" + escapeEnvVar(businessUnitId));
+        envList.add("INPUT_CREATED-BY-USER-ID=" + escapeEnvVar(createdByUserId));
+        envList.add("INPUT_PRODUCT-ID=" + escapeEnvVar(productId));
+        envList.add("INPUT_ARTIFACT-DESCRIPTION=" + escapeEnvVar(artifactDescription));
 
-        // non required parameters:
-        envList.add("INPUT_BUSINESS-UNIT-ID=" + businessUnitId);
-        envList.add("INPUT_CREATED-BY-USER-ID=" + createdByUserId);
-        envList.add("INPUT_PRODUCT-ID=" + productId);
-        envList.add("INPUT_ARTIFACT-DESCRIPTION=" + artifactDescription);
+        URL resourceUrl = UploadBinaryScanRecorder.class
+                .getClassLoader()
+                .getResource("io/jenkins/plugins/finitestateuploadbinaryscan/docker/Dockerfile");
 
-        // Docker client configuration
-        DefaultDockerClientConfig config =
-                DefaultDockerClientConfig.createDefaultConfigBuilder().build();
-        DockerClient dockerClient = DockerClientBuilder.getInstance(config).build();
+        if (resourceUrl == null) {
+            listener.getLogger().println("Dockerfile not found");
+            return false;
+        }
+        File dockerfile = new File(resourceUrl.getFile());
+        File dockerDir = dockerfile.getParentFile();
 
-        URL resourceUrl =
-                UploadBinaryScanRecorder.class.getClassLoader().getResource("com/finitestate/docker/Dockerfile");
+        if (!buildDockerImage(dockerDir, listener)) {
+            return false;
+        }
 
-        BuildImageCmd buildImageCmd = dockerClient.buildImageCmd();
+        buildDockerImage(dockerDir, listener);
 
-        // Step 2: Set the Dockerfile
-        buildImageCmd.withDockerfile(new File(resourceUrl.getFile()));
-
-        // Step 3: Execute the build and get the result callback
-        BuildImageResultCallback resultCallback = new BuildImageResultCallback() {
-            @Override
-            public void onNext(com.github.dockerjava.api.model.BuildResponseItem item) {
-                // Handle build response
-                System.out.println(item.getStream());
-                super.onNext(item);
-            }
-
-            @Override
-            public void onError(Throwable throwable) {
-                super.onError(throwable);
-            }
-        };
-
-        buildImageCmd.exec(resultCallback);
-
-        // Step 4: Await the image ID
-        String imageId = resultCallback.awaitImageId();
-
-        System.out.println("Built image ID: " + imageId);
-        listener.getLogger().println("imageId: " + imageId);
-
+        // Step 2: Verify the file exists
         File file = getFileFromWorkspace(build, filePath, listener);
         if (file == null || !file.exists()) {
-            // File not found
             listener.getLogger().println("File specified in file path not found: " + filePath);
             return false;
         } else {
-            // Process the file
             listener.getLogger().println("Found file: " + file.getAbsolutePath());
         }
         envList.add("INPUT_FILE-PATH=/tmp/" + file.getName()); // set env filename
 
-        // Create a list to hold volume mappings
-        // String hostFilePath = file.getAbsolutePath();
         String hostDirectory = file.getParent();
         String containerDirectoryPath = "/tmp/";
 
-        Bind volumeBind = new Bind(hostDirectory, new Volume(containerDirectoryPath));
-        // Create a Volume object for the mapping
+        // Step 3: Run the Docker container
+        List<String> runCommand = new ArrayList<>();
+        runCommand.add("docker");
+        runCommand.add("run");
+        runCommand.add("--rm");
+        for (String envVar : envList) {
+            runCommand.add("-e");
+            runCommand.add(envVar);
+        }
+        runCommand.add("-v");
+        runCommand.add(hostDirectory + ":" + containerDirectoryPath);
+        runCommand.add("finite-state-upload");
 
-        // Run Docker container from the built image
-        CreateContainerCmd createContainerCmd =
-                dockerClient.createContainerCmd(imageId).withBinds(volumeBind).withEnv(envList);
-        String containerId = createContainerCmd.exec().getId();
-        dockerClient.startContainerCmd(containerId).exec();
+        ProcessBuilder runProcessBuilder = new ProcessBuilder(runCommand);
+        runProcessBuilder.redirectErrorStream(true);
+        Process runProcess = runProcessBuilder.start();
 
-        // Retrieve and log container logs
-        LogContainerCmd logContainerCmd = dockerClient
-                .logContainerCmd(containerId)
-                .withStdErr(true)
-                .withStdOut(true)
-                .withFollowStream(true)
-                .withTailAll();
-
-        // Retrieve and log container logs
-        ResultCallback.Adapter<Frame> callback = new ResultCallback.Adapter<Frame>() {
-            @Override
-            public void onNext(Frame frame) {
-                listener.getLogger().println(frame.toString());
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(runProcess.getInputStream()))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                listener.getLogger().println(line);
             }
-        };
-        logContainerCmd.exec(callback).awaitCompletion();
+        }
 
-        // Wait for the container to finish
-        dockerClient
-                .waitContainerCmd(containerId)
-                .exec(new WaitContainerResultCallback())
-                .awaitCompletion(5, TimeUnit.MINUTES);
-
+        int runExitCode = runProcess.waitFor();
+        if (runExitCode != 0) {
+            listener.getLogger().println("Docker run failed");
+            return false;
+        }
         build.addAction(new UploadBinaryScanAction(assetId));
-        // dockerClient.close();
         return true;
     }
 
@@ -384,7 +401,7 @@ public class UploadBinaryScanRecorder extends Recorder {
             // Return the populated StandardListBoxModel
             return items;
         }
-        
+
         @RequirePOST
         public ListBoxModel doFillFiniteStateSecretItems(
                 @AncestorInPath Item item, @QueryParameter String finiteStateSecret) {
@@ -425,8 +442,12 @@ public class UploadBinaryScanRecorder extends Recorder {
             return items;
         }
 
-        private FormValidation checkRequiredValue(String value) {
-            if (value.length() == 0) {
+        private FormValidation checkRequiredValue(Item item, String value) {
+            if (item == null
+                    || !item.hasPermission(Item.EXTENDED_READ) && !item.hasPermission(CredentialsProvider.USE_ITEM)) {
+                return FormValidation.error("You do not have permission to perform this action.");
+            }
+            if (value == null || value.trim().isEmpty()) {
                 return FormValidation.error("This value is required");
             }
             return FormValidation.ok();
@@ -434,41 +455,44 @@ public class UploadBinaryScanRecorder extends Recorder {
 
         @RequirePOST
         // lgtm[jenkins/no-permission-check]
-        public FormValidation doCheckFiniteStateClientId(@QueryParameter String value)
+        public FormValidation doCheckFiniteStateClientId(@AncestorInPath Item item, @QueryParameter String value)
                 throws IOException, ServletException {
-            return checkRequiredValue(value);
+            return checkRequiredValue(item, value);
         }
 
         @RequirePOST
         // lgtm[jenkins/no-permission-check]
-        public FormValidation doCheckFiniteStateSecret(@QueryParameter String value)
+        public FormValidation doCheckFiniteStateSecret(@AncestorInPath Item item, @QueryParameter String value)
                 throws IOException, ServletException {
-            return checkRequiredValue(value);
+            return checkRequiredValue(item, value);
         }
 
         @RequirePOST
         // lgtm[jenkins/no-permission-check]
-        public FormValidation doCheckFiniteStateOrganizationContext(@QueryParameter String value)
+        public FormValidation doCheckFiniteStateOrganizationContext(
+                @AncestorInPath Item item, @QueryParameter String value) throws IOException, ServletException {
+            return checkRequiredValue(item, value);
+        }
+
+        @RequirePOST
+        // lgtm[jenkins/no-permission-check]
+        public FormValidation doCheckAssetId(@AncestorInPath Item item, @QueryParameter String value)
                 throws IOException, ServletException {
-            return checkRequiredValue(value);
+            return checkRequiredValue(item, value);
         }
 
         @RequirePOST
         // lgtm[jenkins/no-permission-check]
-        public FormValidation doCheckAssetId(@QueryParameter String value) throws IOException, ServletException {
-            return checkRequiredValue(value);
+        public FormValidation doCheckVersion(@AncestorInPath Item item, @QueryParameter String value)
+                throws IOException, ServletException {
+            return checkRequiredValue(item, value);
         }
 
         @RequirePOST
         // lgtm[jenkins/no-permission-check]
-        public FormValidation doCheckVersion(@QueryParameter String value) throws IOException, ServletException {
-            return checkRequiredValue(value);
-        }
-
-        @RequirePOST
-        // lgtm[jenkins/no-permission-check]
-        public FormValidation doCheckFilePath(@QueryParameter String value) throws IOException, ServletException {
-            return checkRequiredValue(value);
+        public FormValidation doCheckFilePath(@AncestorInPath Item item, @QueryParameter String value)
+                throws IOException, ServletException {
+            return checkRequiredValue(item, value);
         }
 
         @Override
