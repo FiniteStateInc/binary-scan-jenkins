@@ -1,4 +1,4 @@
-package com.finitestate.uploadbinaryscan;
+package io.jenkins.plugins.finitestateuploadbinaryscan;
 
 import hudson.model.Run;
 import jenkins.model.RunAction2;
